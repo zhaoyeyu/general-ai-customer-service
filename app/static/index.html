@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123f31" />
+    <title>智能客服</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/chat.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="chat-header">
+        <div class="brand"><span class="brand-mark">智</span><div><strong id="brandName">智能客服</strong><small>GENERAL AI SUPPORT</small></div></div>
+        <div class="header-actions"><span class="online"><i></i>在线</span><button id="newConversation" class="new-chat" type="button">新对话</button><a href="/admin" class="admin-link">管理后台</a></div>
+      </header>
+      <main class="chat-main">
+        <div class="messages" id="messages"></div>
+      </main>
+      <div class="composer-area">
+        <div class="quick-prompts" id="quickPrompts">
+          <button>介绍一下你们的服务</button><button>售后政策是什么？</button><button>如何联系人工客服？</button>
+        </div>
+        <form class="composer" id="chatForm">
+          <textarea id="messageInput" rows="1" maxlength="20000" placeholder="输入你的问题…" aria-label="消息内容"></textarea>
+          <button id="sendButton" type="submit" aria-label="发送">↑</button>
+        </form>
+        <p>AI 可能会出错，重要信息请人工复核</p>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/static/chat.js" defer></script>
+  </body>
+</html>

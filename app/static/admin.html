@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>智能客服管理台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/admin.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside>
+        <div class="logo"><span>智</span><div><strong>智能客服管理台</strong><small>CONTROL CENTER</small></div></div>
+        <nav><button class="nav active" data-panel="settings">◉ 服务配置</button><button class="nav" data-panel="knowledge">▤ 知识库 <i id="docCount">0</i></button><button class="nav" data-panel="monitor">⌁ 运行监控</button><button class="nav" data-panel="handoffs">↗ 人工接管 <i id="handoffCount">0</i></button></nav>
+        <a class="back" href="/">← 返回客服页面</a>
+      </aside>
+      <main>
+        <header><button id="menuButton" aria-label="打开菜单">☰</button><div><small>ADMIN CONSOLE</small><h1 id="pageTitle">服务配置</h1></div><span class="status" id="serviceStatus"><i></i>未配置</span></header>
+        <section class="panel-view active" id="settingsPanel">
+          <div class="page-heading"><div><span>MODEL & IDENTITY</span><h2>连接模型与设置客服</h2><p>保存 API Key 后可自动读取可用模型；模型留空时，连接检测会自动选择推荐模型。</p></div><button class="primary" id="saveSettings">保存配置</button></div>
+          <div class="grid">
+            <article class="card">
+              <div class="card-title"><b>01</b><div><h3>模型连接</h3><p>Key 会加密写入本机数据目录，页面不会再次读取明文。</p></div></div>
+              <label>API 地址<input id="baseUrl" type="url" placeholder="https://openrouter.ai/api/v1" /></label>
+              <label>API Key<div class="secret"><input id="apiKey" type="password" autocomplete="new-password" placeholder="输入新 Key；留空则保留已保存的 Key" /><button id="toggleKey" type="button">显示</button></div><small id="keyHint">尚未配置</small></label>
+              <label>模型 ID <em>可自动选择</em><input id="model" type="text" list="modelOptions" placeholder="留空后点击连接检测自动选择" /><datalist id="modelOptions"></datalist><small id="modelHint">也可以先保存 Key，再点击下方按钮自动读取模型。</small></label>
+              <div class="actions"><button class="secondary" id="testConnection" type="button">保存并检测连接</button><button class="ghost" id="loadModels" type="button">读取模型列表</button></div>
+              <div class="result" id="testResult"></div>
+            </article>
+            <article class="card">
+              <div class="card-title"><b>02</b><div><h3>客服身份</h3><p>定义客户看到的名称、欢迎语和回答边界。</p></div></div>
+              <label>客服名称<input id="brandName" type="text" /></label>
+              <label>欢迎语<textarea id="welcomeMessage" rows="3"></textarea></label>
+              <label>客服规则<textarea id="systemPrompt" rows="7"></textarea></label>
+              <div class="range"><label>回答灵活度 <output id="temperatureValue">0.25</output><input id="temperature" type="range" min="0" max="1.5" step="0.05" /></label><label>检索片段<input id="topK" type="number" min="1" max="12" /></label></div>
+            </article>
+            <article class="card agent-policy">
+              <div class="card-title"><b>03</b><div><h3>Agent 工作流</h3><p>由程序控制路由、记忆和人工审批，模型只负责理解与生成。</p></div></div>
+              <label class="toggle-row"><span><strong>允许转人工</strong><small>明确要求人工或出现高风险诉求时创建接管工单</small></span><input id="handoffEnabled" type="checkbox" /></label>
+              <label>低置信度阈值<input id="confidenceThreshold" type="number" min="0" max="10" step="0.01" /><small>检索分数低于阈值时标为通用回答，不把知识库结果当作可靠依据。</small></label>
+              <label>会话记忆条数<input id="maxHistory" type="number" min="2" max="40" /><small>历史保存在服务端，前端无需重复上传整段对话。</small></label>
+            </article>
+          </div>
+        </section>
+        <section class="panel-view" id="knowledgePanel">
+          <div class="page-heading"><div><span>KNOWLEDGE BASE</span><h2>维护业务知识</h2><p>上传产品资料、售后规则与常见问题，客服回答时会自动检索。</p></div><label class="primary file-button">＋ 添加文件<input id="fileInput" type="file" accept=".txt,.md,.csv,.pdf,.docx" multiple /></label></div>
+          <div class="stats"><article><span>知识文件</span><strong id="statDocuments">0</strong></article><article><span>知识片段</span><strong id="statChunks">0</strong></article><article><span>文本字符</span><strong id="statCharacters">0</strong></article></div>
+          <div class="drop" id="uploadZone"><b>⇧</b><strong>拖放资料到这里</strong><span>TXT、MD、CSV、PDF、DOCX · 单文件不超过 10 MB</span></div>
+          <article class="card list-card"><div class="list-head"><div><h3>已添加资料</h3><span id="knowledgeSummary">还没有知识文件</span></div><button id="refreshKnowledge">刷新</button></div><div id="documentList"></div></article>
+        </section>
+        <section class="panel-view" id="monitorPanel">
+          <div class="page-heading"><div><span>OBSERVABILITY</span><h2>Agent 运行监控</h2><p>每次回答都记录路由、模型、检索分数、耗时与用户反馈，不记录 API Key。</p></div><button class="ghost" id="refreshMonitor">刷新</button></div>
+          <div class="stats monitor-stats"><article><span>运行次数</span><strong id="metricRuns">0</strong></article><article><span>平均耗时</span><strong id="metricLatency">0 ms</strong></article><article><span>人工接管</span><strong id="metricHandoffs">0</strong></article><article><span>好评率</span><strong id="metricPositive">—</strong></article></div>
+          <article class="card list-card"><div class="list-head"><div><h3>最近运行</h3><span>用于排错、评估和优化知识库</span></div></div><div id="traceList"></div></article>
+        </section>
+        <section class="panel-view" id="handoffsPanel">
+          <div class="page-heading"><div><span>HUMAN IN THE LOOP</span><h2>人工接管队列</h2><p>高风险问题和用户主动要求人工时，Agent 会停止自动处理并创建工单。</p></div><button class="ghost" id="refreshHandoffs">刷新</button></div>
+          <article class="card list-card"><div class="list-head"><div><h3>待处理会话</h3><span id="handoffSummary">当前没有待接管会话</span></div></div><div id="handoffList"></div></article>
+        </section>
+      </main>
+    </div>
+    <div class="drawer-overlay" id="drawerOverlay"></div><div class="toast" id="toast" role="status"></div>
+    <script src="/static/admin.js" defer></script>
+  </body>
+</html>
