@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -18,7 +19,16 @@ TEXT_PATTERNS = {
 
 def main() -> int:
     findings: list[str] = []
-    for path in ROOT.rglob("*"):
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout.decode("utf-8").split("\0")
+    for relative_name in tracked:
+        if not relative_name:
+            continue
+        path = ROOT / relative_name
         if any(part in SKIP_DIRS for part in path.parts) or not path.is_file():
             continue
         relative = path.relative_to(ROOT)
